@@ -1,0 +1,12 @@
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+venv/
+env/
+*.db
+.DS_Store
+user_accounts.json
+accounts.json

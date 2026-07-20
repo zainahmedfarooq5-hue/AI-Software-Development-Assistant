@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login-flask-app - Sign In</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div><div class="shape shape-2"></div>
+        <div class="shape shape-3"></div><div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+    </div>
+
+    <div class="auth-wrapper">
+        <div class="auth-card" id="authCard">
+            <div class="card-glow"></div>
+            <div class="auth-header">
+                <div class="logo-animated">
+                    <div class="logo-ring"></div>
+                    <div class="logo-ring ring-2"></div>
+                    <span class="logo-icon">&#9883;</span>
+                </div>
+                <h1 class="title typing-effect">Welcome Back</h1>
+                <p class="subtitle fade-in-up">Sign in to your account</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-error shake">
+                <span class="alert-icon">&#9888;</span> {{ error }}
+            </div>
+            {% endif %}
+
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchTab('user')" id="tabUser">
+                    <span>&#128100;</span> User
+                </button>
+                <button class="login-tab" onclick="switchTab('admin')" id="tabAdmin">
+                    <span>&#128737;</span> Admin
+                </button>
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}" class="auth-form" id="loginForm">
+                <input type="hidden" name="login_type" id="loginType" value="user">
+
+                <div class="input-group floating">
+                    <input type="text" id="username" name="username" placeholder=" " required autofocus>
+                    <label for="username">Username</label>
+                    <div class="input-border"></div>
+                    <span class="input-icon">&#128100;</span>
+                </div>
+
+                <div class="input-group floating">
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <label for="password">Password</label>
+                    <div class="input-border"></div>
+                    <span class="input-icon">&#128272;</span>
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <span class="eye-open">&#128065;</span>
+                        <span class="eye-closed" style="display:none;">&#128064;</span>
+                    </button>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-custom">
+                        <input type="checkbox" name="remember">
+                        <span class="checkmark"></span> Remember me
+                    </label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-glow" id="submitBtn">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-loader" style="display:none;"><span class="spinner"></span></span>
+                    <span class="btn-arrow">&rarr;</span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>New here? <a href="/register" class="link-glow">Create an account</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+    <script>
+    function switchTab(type) {
+        document.getElementById('loginType').value = type;
+        document.getElementById('tabUser').classList.toggle('active', type === 'user');
+        document.getElementById('tabAdmin').classList.toggle('active', type === 'admin');
+        const card = document.getElementById('authCard');
+        card.classList.toggle('admin-mode', type === 'admin');
+    }
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

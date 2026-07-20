@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login-flask-app - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    <canvas id="particles"></canvas>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand"><span class="brand-icon">&#9883;</span><span class="brand-text">Nexus</span></div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">&#9776;</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item active"><span class="nav-icon">&#127968;</span><span class="nav-label">Dashboard</span></a>
+                <a href="#" class="nav-item"><span class="nav-icon">&#128200;</span><span class="nav-label">Analytics</span></a>
+                <a href="#" class="nav-item"><span class="nav-icon">&#128196;</span><span class="nav-label">Projects</span></a>
+                <a href="/admin/dashboard" class="nav-item" title="Admin Panel"><span class="nav-icon">&#128737;</span><span class="nav-label">Admin Panel</span></a>
+                <a href="/logout" class="nav-item logout-item"><span class="nav-icon">&#128682;</span><span class="nav-label">Logout</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar animate-pulse">{{ user.avatar if user else "U" }}</div>
+                    <div class="user-info">
+                        <span class="user-name">{{ user.username if user else "User" }}</span>
+                        <span class="user-role">{{ user.role if user and user.role else "User" }}</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+                    <h1 class="page-title slide-in">Welcome back, <span class="gradient-text">{{ user.username if user else "User" }}</span></h1>
+                </div>
+                <div class="topbar-right">
+                    <div class="search-box"><input type="text" placeholder="Search..." class="search-input"><span class="search-icon">&#128269;</span></div>
+                    <button class="icon-btn"><span>&#128276;</span><span class="notification-badge">3</span></button>
+                    <div class="topbar-avatar">{{ user.avatar if user else "U" }}</div>
+                </div>
+            </header>
+
+            <div class="content-grid">
+                <div class="stats-row">
+                    <div class="stat-card glass-card" style="--delay:0">
+                        <div class="stat-icon-wrap blue"><span>&#128101;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Total Users</h3><p class="stat-value" data-count="{{ total_users }}">0</p></div>
+                        <div class="stat-trend up">&#8593; 12%</div>
+                    </div>
+                    <div class="stat-card glass-card" style="--delay:1">
+                        <div class="stat-icon-wrap green"><span>&#128200;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Sessions</h3><p class="stat-value" data-count="{{ total_sessions }}">0</p></div>
+                        <div class="stat-trend up">&#8593; 8%</div>
+                    </div>
+                    <div class="stat-card glass-card" style="--delay:2">
+                        <div class="stat-icon-wrap orange"><span>&#128640;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Projects</h3><p class="stat-value" data-count="12">0</p></div>
+                        <div class="stat-trend up">&#8593; 24%</div>
+                    </div>
+                    <div class="stat-card glass-card" style="--delay:3">
+                        <div class="stat-icon-wrap purple"><span>&#128176;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Revenue</h3><p class="stat-value" data-count="8450" data-prefix="$">$0</p></div>
+                        <div class="stat-trend up">&#8593; 18%</div>
+                    </div>
+                </div>
+
+                <div class="middle-row">
+                    <div class="chart-card glass-card" style="--delay:4">
+                        <div class="card-header"><h2>Activity Overview</h2>
+                            <div class="chart-tabs"><button class="chart-tab active">Week</button><button class="chart-tab">Month</button></div>
+                        </div>
+                        <div class="chart-area"><canvas id="activityChart"></canvas></div>
+                    </div>
+                    <div class="profile-card glass-card" style="--delay:5">
+                        <div class="profile-header">
+                            <div class="profile-avatar-large">{{ user.avatar if user else "U" }}</div>
+                            <h2 class="profile-name">{{ user.username if user else "User" }}</h2>
+                            <span class="profile-badge">&#127775; {{ user.role if user and user.role else "User" }}</span>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="profile-stat"><span class="ps-value">24</span><span class="ps-label">Projects</span></div>
+                            <div class="profile-stat"><span class="ps-value">128</span><span class="ps-label">Commits</span></div>
+                            <div class="profile-stat"><span class="ps-value">4.9</span><span class="ps-label">Rating</span></div>
+                        </div>
+                        <div class="profile-info">
+                            <p><span>&#128231;</span> {{ user.email if user else "" }}</p>
+                            <p><span>&#128197;</span> Joined {{ user.created[:10] if user and user.created else "Today" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bottom-row">
+                    <div class="activity-card glass-card" style="--delay:6">
+                        <div class="card-header"><h2>Recent Activity</h2></div>
+                        <div class="activity-feed">
+                            {% for s in sessions %}
+                            <div class="activity-item slide-in-right" style="--i:{{ loop.index }}">
+                                <div class="activity-dot {{ 'green' if 'login' in s.action else ('red' if 'logout' in s.action else 'blue') }}"></div>
+                                <div class="activity-content">
+                                    <p class="activity-text">{{ s.action|replace('_',' ')|title }} by <strong>{{ s.user }}</strong></p>
+                                    <span class="activity-time">{{ s.time }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if not sessions %}
+                            <div class="activity-item"><div class="activity-dot blue"></div><div class="activity-content"><p class="activity-text">Welcome! Start exploring.</p></div></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="tasks-card glass-card" style="--delay:7">
+                        <div class="card-header"><h2>Quick Actions</h2></div>
+                        <div class="quick-actions">
+                            <a href="/admin/dashboard" class="action-btn"><span class="action-icon">&#128737;</span><span>Admin Panel</span></a>
+                            <a href="#" class="action-btn"><span class="action-icon">&#128640;</span><span>New Project</span></a>
+                            <a href="#" class="action-btn"><span class="action-icon">&#128196;</span><span>New File</span></a>
+                            <a href="/logout" class="action-btn"><span class="action-icon">&#128682;</span><span>Logout</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "ai-dev-assistant",
+  "version": "1.0.0",
+  "description": "AI Software Development Assistant - Create full projects from natural language",
+  "main": "lib/index.js",
+  "bin": {
+    "devassist": "./bin/devassist.js"
+  },
+  "scripts": {
+    "start": "node bin/devassist.js",
+    "test": "node bin/devassist.js --test"
+  },
+  "keywords": ["ai", "developer", "assistant", "cli", "code-generator"],
+  "license": "MIT"
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login-flask-app - Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    <canvas id="particles"></canvas>
+    <div class="dashboard-container">
+        <aside class="sidebar admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand"><span class="brand-icon">&#128737;</span><span class="brand-text admin-brand">Admin Panel</span></div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">&#9776;</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard" class="nav-item active"><span class="nav-icon">&#127968;</span><span class="nav-label">Overview</span></a>
+                <a href="#users-section" class="nav-item"><span class="nav-icon">&#128101;</span><span class="nav-label">Users</span></a>
+                <a href="#activity-section" class="nav-item"><span class="nav-icon">&#128203;</span><span class="nav-label">Activity Log</span></a>
+                <a href="/dashboard" class="nav-item"><span class="nav-icon">&#128100;</span><span class="nav-label">User View</span></a>
+                <a href="/logout" class="nav-item logout-item"><span class="nav-icon">&#128682;</span><span class="nav-label">Logout</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar admin-avatar">&#128737;</div>
+                    <div class="user-info">
+                        <span class="user-name">Administrator</span>
+                        <span class="user-role admin-role">Super Admin</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+                    <h1 class="page-title slide-in">&#128737; Admin <span class="gradient-text-admin">Dashboard</span></h1>
+                </div>
+                <div class="topbar-right">
+                    <span class="admin-badge">&#128274; Administrator</span>
+                    <button class="icon-btn"><span>&#128276;</span><span class="notification-badge">5</span></button>
+                </div>
+            </header>
+
+            <div class="content-grid">
+                <div class="stats-row">
+                    <div class="stat-card glass-card admin-stat" style="--delay:0">
+                        <div class="stat-icon-wrap red-glow"><span>&#128101;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Total Users</h3><p class="stat-value" data-count="{{ total_users }}">0</p></div>
+                    </div>
+                    <div class="stat-card glass-card admin-stat" style="--delay:1">
+                        <div class="stat-icon-wrap green-glow"><span>&#9989;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Active Users</h3><p class="stat-value" data-count="{{ active_users }}">0</p></div>
+                    </div>
+                    <div class="stat-card glass-card admin-stat" style="--delay:2">
+                        <div class="stat-icon-wrap blue-glow"><span>&#128200;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Total Sessions</h3><p class="stat-value" data-count="{{ total_sessions }}">0</p></div>
+                    </div>
+                    <div class="stat-card glass-card admin-stat" style="--delay:3">
+                        <div class="stat-icon-wrap orange-glow"><span>&#128221;</span></div>
+                        <div class="stat-info"><h3 class="stat-label">Registrations Today</h3><p class="stat-value" data-count="{{ registrations_today }}">0</p></div>
+                    </div>
+                </div>
+
+                <div class="admin-section glass-card" id="users-section">
+                    <div class="card-header">
+                        <h2>&#128101; User Management</h2>
+                        <span class="admin-counter">{{ total_users }} total</span>
+                    </div>
+                    <div class="user-table-wrap">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Logins</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in users %}
+                                <tr class="user-row {% if u.status == 'suspended' %}row-suspended{% endif %}" style="--ri:{{ loop.index }}">
+                                    <td>
+                                        <div class="table-user">
+                                            <div class="table-avatar {% if u.role == 'admin' %}admin-ring{% endif %}">{{ u.avatar if u.avatar else u.username[0]|upper }}</div>
+                                            <span class="table-username">{{ u.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="td-email">{{ u.email }}</td>
+                                    <td><span class="role-badge {% if u.role == 'admin' %}role-admin{% else %}role-user{% endif %}">{{ u.role if u.role else "user" }}</span></td>
+                                    <td><span class="status-dot {{ 'active' if u.status == 'active' else 'suspended' }}"></span>{{ u.status if u.status else "active" }}</td>
+                                    <td class="td-center">{{ u.login_count if u.login_count else 0 }}</td>
+                                    <td class="td-muted">{{ u.created[:10] if u.created else "N/A" }}</td>
+                                    <td class="td-actions">
+                                        <form method="POST" action="/admin/toggle_user/{{ u.id }}" style="display:inline">
+                                            <button type="submit" class="action-btn-sm {{ 'btn-suspend' if u.status == 'active' else 'btn-activate' }}" title="{{ 'Suspend' if u.status == 'active' else 'Activate' }}">
+                                                {{ '&#9888;' if u.status == 'active' else '&#9989;' }}
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="/admin/promote_user/{{ u.id }}" style="display:inline">
+                                            <button type="submit" class="action-btn-sm btn-promote" title="Toggle Admin">
+                                                &#128081;
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="/admin/delete_user/{{ u.id }}" style="display:inline" onsubmit="return confirm('Delete this user?')">
+                                            <button type="submit" class="action-btn-sm btn-delete" title="Delete">&#128465;</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not users %}
+                                <tr><td colspan="7" class="td-empty">No users registered yet</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bottom-row">
+                    <div class="activity-card glass-card" id="activity-section" style="--delay:6">
+                        <div class="card-header"><h2>&#128203; Activity Log</h2></div>
+                        <div class="activity-feed">
+                            {% for s in sessions %}
+                            <div class="activity-item slide-in-right" style="--i:{{ loop.index }}">
+                                <div class="activity-dot {{ 'green' if 'login' in s.action and 'admin' not in s.action else ('red' if 'logout' in s.action else ('purple' if 'admin' in s.action else 'blue')) }}"></div>
+                                <div class="activity-content">
+                                    <p class="activity-text">
+                                        {% if s.action == 'admin_login' %}&#128737; Admin logged in
+                                        {% elif s.action == 'admin_logout' %}&#128737; Admin logged out
+                                        {% elif s.action == 'register' %}&#128221; New registration: <strong>{{ s.user }}</strong>
+                                        {% elif s.action == 'login' %}&#128100; <strong>{{ s.user }}</strong> logged in
+                                        {% elif s.action == 'logout' %}&#128682; <strong>{{ s.user }}</strong> logged out
+                                        {% elif 'deleted_user' in s.action %}&#128465; Admin deleted a user
+                                        {% elif 'toggled_user' in s.action %}&#9888; Admin toggled user status
+                                        {% else %}{{ s.action|replace('_',' ')|title }}{% endif %}
+                                    </p>
+                                    <span class="activity-time">{{ s.time }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if not sessions %}
+                            <div class="activity-item"><div class="activity-dot blue"></div><div class="activity-content"><p class="activity-text">No activity yet</p></div></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="glass-card admin-info-card" style="--delay:7">
+                        <div class="card-header"><h2>&#128274; Admin Info</h2></div>
+                        <div class="admin-info-body">
+                            <div class="admin-info-item"><span class="admin-info-label">Session Started</span><span class="admin-info-value">{{ now }}</span></div>
+                            <div class="admin-info-item"><span class="admin-info-label">Logins Today</span><span class="admin-info-value">{{ logins_today }}</span></div>
+                            <div class="admin-info-item"><span class="admin-info-label">Accounts File</span><span class="admin-info-value td-email">Desktop/user_accounts.json</span></div>
+                            <div class="admin-info-item"><span class="admin-info-label">Admin Password</span><span class="admin-info-value">admin123</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
